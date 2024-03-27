@@ -1,0 +1,52 @@
+
+<html>
+<head>
+    <title>Video Playback</title>
+</head>
+<body>
+    <center>
+        <h2>Video Playback Window</h2>
+        <div>
+            <iframe id="videoIframe" width="600" height="300" src="" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+        <br><br><br>
+        <textarea id="translatedTextWindow" rows="5" cols="30" placeholder="Translated text"></textarea>
+        <button onclick="fetchAndDisplayTranslation()">Click to get the Translate</button>
+    </center>
+    <script>
+        function fetchAndDisplayTranslation() {
+            const transcribeText = window.opener.document.getElementById('transcribe').value;
+            const translatedTextContainer = document.getElementById('translatedTextWindow');
+
+            console.log('Translating text...');
+            try {
+                // Make a request to the server to fetch the translation
+                fetch('/translate_text', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: transcribeText }),
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result && result.translation) {
+                        // Display the translation in the textarea
+                        translatedTextContainer.value = result.translation;
+                        console.log('Translation done!');
+                    } else {
+                        console.log('Translation failed. Check the server response.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error during translation:', error);
+                    console.log('An error occurred during translation. Please try again.', 'error');
+                });
+            } catch (error) {
+                console.error('Error during translation:', error);
+                console.log('An error occurred during translation. Please try again.', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

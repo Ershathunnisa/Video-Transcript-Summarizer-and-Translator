@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Content Summarizer and Translator</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+</head>
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <h1>VIDEO CONTENT TRANSLATOR AND SUMMARIZER</h1>
+    <button id="downloadButton" onclick="downloadVideo()">Download</button>
+    <div id="extractToast" class="toast">Extracting text...</div>
+    <div id="summarizeToast" class="toast">Summarizing text...</div>
+    
+    <fieldset>
+        <legend>Give input</legend>
+        <div class="inputBox">
+            <input type="text" id="linkInput" placeholder="Paste link here...">
+        </div>
+        <br>
+        <br>
+        <br>
+        <center>OR</center><br>
+        <div>
+            <label class="UploadVideo" for="fileInput">Upload Video:</label> &nbsp; &nbsp;
+            <input type="file" id="fileInput"/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <br><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+           <button onclick="extract()">Extract Text</button>
+        </div>
+    </fieldset>
+    <br>
+    <br>
+    <br>
+    <div id="iframeContainer"></div>
+
+    <div>
+        <button onclick="summarize()">Summarize</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <div id="myModal" class="modal">
+            <div class="modal-content">
+              <span class="close" onclick="closeModal()">&times;</span>
+              <h2 id="modalHeading"></h2>
+              <p id="summaryOutput"></p>
+              <br>
+            </div>
+          </div>
+          <button onclick="openVideoWindow()">Translate</button>
+        <div id="translationModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeTranslationModal()">&times;</span>
+                <center>
+                <h2>Video Translation</h2>
+            </center>
+            <div id="container">
+                <iframe id="videoIframe" src="" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                <textarea id="translatedTextWindow" placeholder="Translated text"></textarea>
+            </div>
+          
+                <center>
+                    <br><br><button onclick="fetchAndDisplayTranslation()">Click to get the Translate</button>
+                </center>
+                
+                    
+                
+                </center>
+            </div>
+        </div>
+        
+        <br><br>
+   
+        <textarea id="transcribe" rows="5" cols="30" placeholder="Transcribed text"  ></textarea>
+    </div>
+<script>
+    let downloadedVideoPath = ''; // Variable to store the downloaded video path
+    async function extract() {
+        const linkInput = document.getElementById('linkInput').value;
+        const fileInput = document.getElementById('fileInput').files[0];
+        if (linkInput && fileInput) {
+        alert('Please select either "Paste link" or "Upload Video", not both.');
+        return;
+    }
+        if (linkInput) {
+            // Append a timestamp to the URL to avoid caching
+            const timestamp = new Date().getTime();
+            showToast('Extracting text...');
+            const response = await fetch(`/extract?videoUrl=${encodeURIComponent(linkInput)}&timestamp=${timestamp}`);
+            const result = await response.text();
+            if (result.trim().startsWith('-----')) {
+            // If the result starts with 5 hyphens, show an alert message
+                alert('No transcript available. If you want to download the video, click the download button.');
+            } 
+            else {
+            document.getElementById('transcribe').value = result;
+            document.getElementById('transcribe').removeAttribute('hidden');
+            showToast('Extraction done!', 'success');
+        } 
+    }
+        else if (fileInput)
+         {
+            const formData = new FormData();
+            formData.append('file', fileInput);
+    
+            // Append a timestamp to the request to avoid caching
+            const timestamp = new Date().getTime();
+            showToast('Extracting text...');
+            const response = await fetch(`/extract?timestamp=${timestamp}`, {
+                method: 'POST',
+                body: formData,
+            });
+    
+            const result = await response.text();
+            document.getElementById('transcribe').value = result;
+            document.getElementById('transcribe').removeAttribute('hidden');
+            showToast('Extraction done!', 'success');
+        }
+        
+        else 
+        {
+            alert('Please provide a video link or upload a video file.');
+        }
+    } 
+    async function summarize() 
+    {
+        console.log('Summarize function called');
+        showToast('Summarizing the text...');
+        const summaryOutput = await fetchSummary(); // Replace with your actual summarize logic
+        document.getElementById('myModal').querySelector('h2').innerText = `In this video, you are going to see about:\n ${summaryOutput}`;
+        // Display the summary in the modal
+        //document.getElementById('summaryOutput').innerText = summaryOutput;
+
+        // Show the modal
+        const modal = document.getElementById('myModal');
+        modal.style.display = 'block';
+    }
+    async function fetchSummary() 
+    {
+        console.log('Fetch summary function called');
+        const transcribeText = document.getElementById('transcribe').value;
+        //showToast('Fetching summary...');
+        // Make a request to your Flask server to generate the summary
+        const response = await fetch('/generate_summary', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ text: transcribeText }),
+        });
+
+        const result = await response.json();
+        showToast('Summary Done.');
+        return result.summary;
+    }
+
+    function closeModal() {
+        // Hide the modal
+        console.log('Close modal function called');
+        const modal = document.getElementById('myModal');
+        modal.style.display = 'none';
+    }
+    function openVideoWindow() {
+    // Your existing logic to get video source from linkInput or fileInput
+    const linkInput = document.getElementById('linkInput').value;
+    const fileInput = document.getElementById('fileInput').files[0];
+
+    let videoSource = '';
+
+    if (linkInput) {
+        // If it's a YouTube link, extract the video ID
+        const videoIdMatch = linkInput.match(/[?&]v=([^&]+)/);
+        const videoId = videoIdMatch ? videoIdMatch[1] : null;
+        if (videoId) {
+            videoSource = `https://www.youtube.com/embed/${videoId}?rel=0`;
+        }
+    } else if (fileInput) {
+        const formData = new FormData();
+        formData.append('file', fileInput);
+
+        // Append a timestamp to the request to avoid caching
+        const timestamp = new Date().getTime();
+        showToast('Opening video window...');
+/*
+        fetch(`/uploadVideo?timestamp=${timestamp}`, {
+            method: 'POST',
+            body: formData,
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(result => {
+            if (result.success) {
+                openWindowWithVideo(result.videoUrl);
+            } else {
+                showToast('Failed to upload video. Please try again.', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error during video upload:', error);
+            showToast(`An error occurred during video upload: ${error.message}`, 'error');
+        });
+    */ 
+   } else {
+        alert('Please provide a video link or upload a video file.');
+        return;
+    }
+
+    // Open the translation modal with the determined video source
+    openTranslationModal(videoSource);
+}
+
+    function openTranslationModal(videoSource) {
+   // console.log('Opening translation modal with video source:', videoSource);
+
+    const translationModal = document.getElementById('translationModal');
+    const videoIframe = document.getElementById('videoIframe');
+    const translatedTextContainer = document.getElementById('translatedTextWindow'); // Updated this line
+
+    // Set the video source dynamically
+    videoIframe.src = videoSource;
+
+    // Reset the textarea in the translation modal
+    //translatedTextContainer.value = '';
+
+    translationModal.style.display = 'block';
+    
+}
+
+
+    function closeTranslationModal() {
+    const translationModal = document.getElementById('translationModal');
+    translationModal.style.display = 'none';
+}
+
+
+async function fetchAndDisplayTranslation() {
+    const transcribeText = document.getElementById('transcribe').value;
+    const translatedTextContainer = document.getElementById('translatedTextWindow'); // Updated this line
+
+    showToast('Translating text...');
+    try {
+        const response = await fetch('/translate_text', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ text: transcribeText }),
+        });
+
+        const result = await response.json();
+        if (result && result.translation) {
+            // Display the translation in the textarea in the translation modal
+            translatedTextContainer.value = result.translation;
+            showToast('Translation done!');
+        } else {
+            showToast('Translation failed. Check the server response.');
+        }
+    } catch (error) {
+        console.error('Error during translation:', error);
+        showToast('An error occurred during translation. Please try again.', 'error');
+    }
+}
+
+    function showToast(message, type = 'success') {
+    Toastify({
+        text: message,
+        duration: 3000,
+        gravity: 'bottom',
+        position: 'right',
+        backgroundColor: type === 'error' ? '#ff4444' : '#4CAF50',
+    }).showToast();
+}
+async function downloadVideo() {
+        const videoUrl = document.getElementById('linkInput').value;
+
+        if (videoUrl) {
+            const DOWNLOAD_LOCATION = "C:\\Users\\ersha\\OneDrive\\Desktop";  // Update with your desired download location
+            showToast('..Video is downloading to your device..');
+            showToast('...please wait...');
+            try {
+                
+                const response = await fetch(`/download?videoUrl=${encodeURIComponent(videoUrl)}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    downloadedVideoPath = result.filePath;
+                    alert(`Video downloaded successfully to: ${result.filePath}. Now you can manually transcribe it.`);
+                } else {
+                    alert(`Failed to download video. Please try again.`);
+                }
+            } catch (error) {
+                console.error('Error downloading video:', error);
+                alert(`An error occurred while downloading the video. Please try again.`);
+            }
+        } else {
+            alert('Please enter a valid video URL.');
+        }
+    }
+    
+    </script>
+</body>
+</html>

@@ -1,0 +1,194 @@
+*
+{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+}
+body
+{
+	display:flex;
+	justify-content:center;
+	align-items:center;
+	min-height:100vh;
+	flex-direction:column;
+	background:#1d2b3a;
+	color:white;
+	background-image:linear-gradient(rgba(0,0,0,0.5),rgba(0,0,0,0.5)),url('1.jpg');
+	
+}
+
+h1
+{
+	top:15px;
+	position:absolute;
+	align-content: center;
+	color:rgb(223, 44, 74);
+}
+.logo img{
+	position:absolute;
+	top:0;
+    left:0;
+    margin-left:20px;
+    width:150px;
+    height:100px;
+}
+
+
+.inputBox
+{
+	position:absolute;
+	width:250px;
+}
+.inputBox input
+{
+	width:150%;
+	padding:10px;
+	border:1px solid white;
+	background-color: transparent;
+	border-radius:10px;
+	outline:none;
+	color:#ffff;
+	font-size:1em;
+}
+
+
+Button
+{
+	font-size:1rem;
+	border:none;
+	outline:none;
+	padding:10px 12px;
+	border-radius:10px;
+	background-color:rgb(246,45,78);
+	color:white;
+}
+#file
+{
+	display:none;
+}
+/*
+.UploadVideo
+{
+	border-radius:6px;
+	border:1px dashed white;
+	padding:10px 70px;
+}
+*/
+.report
+{
+	right:0;
+	top:0;
+}
+fieldset {
+	display: block;
+	margin-left: 2px;
+	margin-right: 2px;
+	padding-top: 1.35em;
+	padding-bottom: 1.9em;
+	padding-left: 0.75em;
+	padding-right: 0.75em;
+	border: 2px groove (internal value);
+	width: 30%;
+	height: 500%;
+	align-items: center;
+	align-content: center;
+	align-self: center;
+  }
+	
+/* Add this CSS for the modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+	background-image:linear-gradient(rgba(0,0,0,0.5),rgba(0,0,0,0.5)),url('1.jpg');
+    /*background-color: rgb(0, 0, 0);
+    background-color: rgba(0, 0, 0, 0.4);*/
+}
+
+.modal-content {
+    background-color: black;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+}
+
+.close {
+    color: rgb(244, 241, 241);
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: rgb(240, 236, 236);
+    text-decoration: none;
+    cursor: pointer;
+}
+/* Add these styles to enhance the appearance */
+
+.toast {
+    visibility: hidden;
+    max-width: 200px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 5px;
+    padding: 10px;
+    position: fixed;
+    z-index: 1;
+    left: 50%;
+    bottom: 30px;
+    transform: translateX(-50%);
+    font-size: 14px;
+}
+
+.toast.show {
+    visibility: visible;
+    animation: fadeOut 3s forwards;
+}
+
+@keyframes fadeOut {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* Add this style to highlight button click */
+button:active {
+    background-color: #45a049;
+}
+#downloadButton {
+	position: fixed;
+	top: 10px;
+	right: 10px;
+	padding: 10px;
+	background-color: rgb(246,45,78);
+	color: white;
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+}
+#container {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+#videoIframe {
+	width: 500px;
+	height: 300px;
+}
+
+#translatedTextWindow {
+	width: 40%; /* Adjust the width as needed */
+	height: 250px;
+}
+.highlight {
+	background-color: yellow;
