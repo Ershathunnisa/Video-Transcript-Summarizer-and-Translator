@@ -3,8 +3,13 @@
 
 The above picture is the file structure of the project.
 #Steps to run:
-open command prompt 
-go to the directory 
-enter "python app.py"
-copy the ip adddress then paste it in browser.
-Njoy the application
+--open command prompt 
+
+--go to the directory 
+
+--enter "python app.py"
+
+--copy the ip adddress then paste it in browser.
+
+--Njoy the application
+
